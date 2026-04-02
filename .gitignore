@@ -1,0 +1,88 @@
+# =============================================================================
+# .gitignore — LGCP Deslizamientos Valle de Aburrá
+# =============================================================================
+
+# ─── DATOS GRANDES (superar límite de 100 MB de GitHub) ───────────────────────
+# DEM original de alta resolución (3.4 GB) — almacenar en servidor externo o
+# compartir mediante enlace (Google Drive, Zenodo, etc.)
+DATA/MDT_05001_20241102-002.tif
+
+# Rasters de covariables derivados del DEM (11–19 MB c/u)
+# Son reproducibles ejecutando el notebook de Python
+DATA/cov_elevacion.tif
+DATA/cov_pendiente.tif
+DATA/cov_aspecto.tif
+DATA/cov_aspecto.tif
+DATA/cov_log_area_acum.tif
+DATA/dem_10m.tif
+
+# GeoPackages de datos originales (fuentes brutas, 15–20 MB)
+# Compartir por separado o documentar su origen
+DATA/MenM_VdeA.gpkg
+DATA/MenM_VdeA_Polygon.gpkg
+
+# ─── ARCHIVOS TEMPORALES DE BASE DE DATOS ─────────────────────────────────────
+DATA/*.gpkg-journal
+DATA/*.gpkg-wal
+DATA/*.gpkg-shm
+*.sqlite-journal
+
+# ─── CONFIGURACIÓN INTERNA DE COWORK / CLAUDE ─────────────────────────────────
+.claude/
+
+# ─── PYTHON ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+.Python
+.env
+.venv
+env/
+venv/
+ENV/
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ─── R ────────────────────────────────────────────────────────────────────────
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+*.rds
+*.RDS
+# Archivos de caché de INLA (pueden ser muy grandes)
+*.inla
+INLA_results/
+
+# ─── SISTEMA OPERATIVO ────────────────────────────────────────────────────────
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+# Linux
+*~
+
+# ─── EDITORES ─────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# ─── OUTPUTS TEMPORALES / LOGS ────────────────────────────────────────────────
+*.log
+*.tmp
+*.temp
+*.bak
+*.orig
+nohup.out
