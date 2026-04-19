@@ -9,17 +9,18 @@ DATA/MDT_05001_20241102-002.tif
 
 # Rasters de covariables derivados del DEM (11–19 MB c/u)
 # Son reproducibles ejecutando el notebook de Python
-DATA/cov_elevacion.tif
-DATA/cov_pendiente.tif
-DATA/cov_aspecto.tif
-DATA/cov_aspecto.tif
-DATA/cov_log_area_acum.tif
 DATA/dem_10m.tif
 
-# GeoPackages de datos originales (fuentes brutas, 15–20 MB)
-# Compartir por separado o documentar su origen
-DATA/MenM_VdeA.gpkg
-DATA/MenM_VdeA_Polygon.gpkg
+# ─── ARCHIVOS GRANDES (>100MB) ────────────────────────────────────────────────
+# Estos archivos superan el límite de GitHub y se mantienen localmente
+DATA/dem_medellin_1m.tif
+DATA/cov1m_pendiente.tif
+DATA/dem_medellin_1m.tif.ovr
+DATA/cov2m_pendiente.tif
+DATA/dem_2m.tif
+DATA/cov1m_aspecto.tif
+DATA/cov2m_aspecto.tif
+DATA/cov2m_twi.tif
 
 # ─── ARCHIVOS TEMPORALES DE BASE DE DATOS ─────────────────────────────────────
 DATA/*.gpkg-journal
@@ -52,6 +53,10 @@ ENV/
 *.Rproj
 *.rds
 *.RDS
+# Permitir archivos de resultados necesarios que no superan el límite de peso
+!results_benchmark.rds
+!results_ipp_2m.rds
+!results_stratified.rds
 # Archivos de caché de INLA (pueden ser muy grandes)
 *.inla
 INLA_results/
@@ -118,3 +123,7 @@ CODE/mesh_stats.R
 CODE/mesh_stats.bat
 setup_github.bat
 setup_github.sh
+.gemini
+.anthropic
+.antigravity
+.claud
