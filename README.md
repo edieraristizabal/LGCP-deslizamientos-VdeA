@@ -1,138 +1,60 @@
-# LGCP — Movimientos en Masa, Valle de Aburrá (Colombia)
+# NHPP — Análisis espacial de movimientos en masa en Medellín
 
-Análisis espacial de movimientos en masa (deslizamientos) en el Valle de Aburrá mediante un **Log-Gaussian Cox Process (LGCP)** con aproximación SPDE e inferencia bayesiana INLA/inlabru.
+Análisis espacial de la susceptibilidad a los movimientos en masa mediante un **Proceso de Poisson No Homogéneo (NHPP)** con aproximación INLA e inferencia bayesiana. Aplicación en Medellín, Colombia, utilizando un Modelo Digital de Elevación de 2 m.
 
 ---
 
 ## Estructura del repositorio
 
 ```
-LGCP/
-├── CODE/                          # Scripts de análisis
-│   ├── MenM_VdeA_procesamiento.ipynb   # Notebook Python: limpieza, DEM, covariables
-│   ├── LGCP_deslizamientos_VdeA.R      # Modelo LGCP principal (inlabru + INLA)
-│   ├── install_inla.R                  # Instalación de INLA y paquetes R
-│   ├── check_pkgs.R                    # Verificación de paquetes R
-│   ├── check_rasters.R                 # Verificación de rasters de covariables
-│   ├── check_nodes_covs.R              # Diagnóstico nodos de malla vs covariables
-│   ├── mesh_stats.R                    # Estadísticas de la malla SPDE
-│   ├── diag_covs.R                     # Diagnóstico de covariables
-│   └── diag_confounding.R              # Diagnóstico de confusión espacial
+.
+├── CODE/                          # Scripts de análisis en R
+│   ├── 01_preprocesar_covariables.R    # Limpieza, estandarización y preparación de datos
+│   └── 02_IPP_dem2m.R                  # Modelo NHPP-INLA principal
 ├── DATA/                          # Datos de entrada (ver nota abajo)
-│   ├── MenM_VdeA_clean.gpkg           # Puntos limpios (5,686 registros)
-│   └── MenM_VdeA_dem.gpkg            # Puntos con atributos topográficos (2,504 registros)
-└── FIG/                           # Figuras de salida
-    ├── MenM_VdeA_revision.png
-    ├── MenM_VdeA_spatial_distribution.png
-    ├── MenM_VdeA_hexbin_densidad.png
-    ├── MenM_VdeA_mapa_elevacion.png
-    ├── 01_mesh_spde.png            ─┐
-    ├── 02_efectos_fijos.png         │
-    ├── 03_hiperparametros_spde.png  │
-    ├── 04_mapa_intensidad_predicha.png│  Figuras del modelo LGCP
-    ├── 05_mapa_incertidumbre.png    │
-    ├── 06_mapa_campo_latente.png    │
-    ├── 07_panel_mapas.png           │
-    ├── 08_obs_vs_predicho.png       │
-    ├── 09_mapa_residuos.png         │
-    ├── 10_obs_vs_predicho_mapas.png │
-    ├── 11_diagnostico_cpo.png       │
-    └── 12_curva_roc.png            ─┘
+│   ├── MenM_VdeA_clean.gpkg            # Inventario de movimientos en masa
+│   ├── MenM_VdeA_dem.gpkg              # Atributos topográficos extraídos
+│   ├── cobertura_2024.tif               # Capa de cobertura urbana
+│   └── (otros rasters de covariables)
+├── FIG/                           # Figuras de salida del modelo
+│   ├── 2m_01_mesh.png                  # Malla de integración
+│   ├── 2m_02_efectos_fijos.png          # Coeficientes posteriores
+│   ├── 2m_04_intensidad.png             # Mapa de intensidad media
+│   ├── 2m_05_incertidumbre.png          # Mapa de desviación estándar
+│   ├── 2m_09_residuos.png               # Mapa de residuos de Pearson
+│   └── 2m_12_roc.png                    # Curva ROC (AUC = 0.762)
+├── manuscrito.tex                  # Manuscrito del artículo científico
+└── referencias.bib                 # Bibliografía del estudio
 ```
 
 ---
 
-## Datos requeridos (no incluidos en el repositorio)
+## Datos requeridos
 
-Los siguientes archivos superan los límites de GitHub y deben obtenerse/generarse por separado:
-
-| Archivo | Tamaño | Descripción | Cómo obtener |
-|---|---|---|---|
-| `DATA/MDT_05001_20241102-002.tif` | ~3.4 GB | DEM 1 m — municipio de Medellín | Fuente institucional |
-| `DATA/MenM_VdeA.gpkg` | ~15 MB | Inventario bruto original | Fuente institucional |
-| `DATA/MenM_VdeA_Polygon.gpkg` | ~20 MB | Polígono del Valle de Aburrá | Fuente institucional |
-| `DATA/cov_elevacion.tif` | ~17 MB | Raster de elevación (10 m) | Generado con el notebook |
-| `DATA/cov_pendiente.tif` | ~19 MB | Raster de pendiente (10 m) | Generado con el notebook |
-| `DATA/cov_aspecto.tif` | ~19 MB | Raster de aspecto (10 m) | Generado con el notebook |
-| `DATA/cov_log_area_acum.tif` | ~11 MB | log₁₀(área acumulada, 10 m) | Generado con el notebook |
-
-> Los rasters de covariables se regeneran ejecutando `CODE/MenM_VdeA_procesamiento.ipynb` con el DEM original.
-
----
-
-## Requisitos
-
-### Python (notebook de preprocesamiento)
-```
-geopandas >= 0.14
-rasterio >= 1.3
-numpy >= 1.24
-scipy >= 1.11
-matplotlib >= 3.7
-contextily >= 1.4
-pysheds >= 0.3
-fiona >= 1.9
-pyproj >= 3.6
-```
-
-Instalar con:
-```bash
-pip install geopandas rasterio numpy scipy matplotlib contextily pysheds fiona pyproj
-```
-
-### R (modelo LGCP)
-```r
-# Ejecutar primero:
-source("CODE/install_inla.R")
-```
-
-Paquetes: `INLA`, `inlabru`, `sf`, `terra`, `ggplot2`, `patchwork`, `viridis`, `scales`, `pROC`
-
----
-
-## Flujo de trabajo
-
-```
-1. Preprocesamiento (Python)
-   └── CODE/MenM_VdeA_procesamiento.ipynb
-       ├── Limpieza del inventario → DATA/MenM_VdeA_clean.gpkg
-       ├── Extracción de atributos DEM (elevación, pendiente, aspecto)
-       ├── Área acumulada (D8, pysheds)
-       ├── Generación de rasters de covariables → DATA/cov_*.tif
-       └── Figuras exploratorias → FIG/
-
-2. Modelado LGCP (R)
-   └── CODE/LGCP_deslizamientos_VdeA.R
-       ├── Dominio: casco convexo + buffer 500 m ∩ máscara DEM
-       ├── Malla SPDE triangular (max.edge = 1,000/3,000 m)
-       ├── Covariables estandarizadas (z-score)
-       ├── Ajuste con inlabru::lgcp() + INLA
-       └── 12 figuras de resultados → FIG/
-```
+Los rasters de alta resolución (MDE 1m/2m) superan los límites de GitHub y se manejan localmente. El repositorio incluye las versiones procesadas y remuestreadas necesarias para la ejecución del modelo, siempre que su tamaño sea inferior a 100 MB.
 
 ---
 
 ## Modelo estadístico
 
-El modelo asume que los deslizamientos son una realización de un **proceso puntual de Poisson no homogéneo** con intensidad log-gaussiana:
+El modelo asume que los movimientos en masa son una realización de un **proceso puntual de Poisson no homogéneo** con intensidad log-lineal:
 
 ```
-log λ(s) = β₀ + β₁·elev(s) + β₂·pend(s) + β₃·asp(s) + β₄·log_acc(s) + ξ(s)
+log λ(s) = β₀ + β₁·pendiente(s) + β₂·aspecto(s) + β₃·urb(s) + β₄·suelos_finos(s)
 ```
 
-donde `ξ(s)` es un **Campo Aleatorio Gaussiano (GRF)** con covarianza de Matérn (α=2), aproximado mediante la ecuación diferencial parcial estocástica de Lindgren et al. (2011). La inferencia se realiza con **INLA** (Rue et al. 2009).
+La inferencia se realiza mediante la **Aproximación de Laplace Anidada Integrada (INLA)** utilizando el dispositivo de integración de Berman-Turner sobre una malla triangular de alta resolución.
 
 ---
 
-## Referencias
+## Resultados principales
 
-- Lindgren, F., Rue, H., & Lindström, J. (2011). An explicit link between Gaussian fields and Gaussian Markov random fields: the stochastic partial differential equation approach. *JRSS-B*, 73(4), 423–498.
-- Rue, H., Martino, S., & Chopin, N. (2009). Approximate Bayesian inference for latent Gaussian models. *JRSS-B*, 71(2), 319–392.
-- Simpson, D., et al. (2017). Penalising model component complexity: A principled, practical approach to constructing priors. *Statistical Science*, 32(1), 1–28.
-- Bachl, F.E., et al. (2019). inlabru: an R package for Bayesian spatial modelling from ecological survey data. *Methods in Ecology and Evolution*, 10(6), 760–766.
+- **Pendiente**: β₁ = 0.901 (Efecto dominante positivo).
+- **Aspecto**: β₂ = -0.243 (Mayor susceptibilidad en laderas orientadas al norte).
+- **AUC**: 0.762 (Buena capacidad discriminativa).
 
 ---
 
 ## Autor
-
-Edier Aristizabal — [edieraristizabal@gmail.com](mailto:edieraristizabal@gmail.com)
+**Edier Aristizábal** — Universidad Nacional de Colombia, Sede Medellín.
+[edieraristizabal@gmail.com](mailto:edieraristizabal@gmail.com)
